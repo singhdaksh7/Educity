@@ -1,16 +1,12 @@
 import React from 'react'
 import aboutImg from "../assets/about.png"
-import play from "../assets/play-icon.png"
+
 function About() {
   return (
     <div className="flex justify-center gap-8 ml-30 mr-30 mt-30 mb-20" id='about'>
       <div className="relative">
         <img className="rounded" src={aboutImg} alt="" />
-        <img
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-15 h-15"
-          src={play}
-          alt=""
-        />
+        
       </div>
       <div className="mt-3">
         <p className="text-blue-900 font-bold">About University</p>
