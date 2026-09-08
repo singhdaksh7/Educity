@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\ActivityLogController;
+use App\Http\Controllers\Api\Admin\StudentController as AdminStudentController;
 use App\Http\Controllers\Api\AdmissionApplicationController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DashboardController;
@@ -8,6 +9,10 @@ use App\Http\Controllers\Api\EnquiryController;
 use App\Http\Controllers\Api\GalleryController;
 use App\Http\Controllers\Api\ProgramController;
 use App\Http\Controllers\Api\SiteSettingController;
+use App\Http\Controllers\Api\Student\ApplicationController as StudentApplicationController;
+use App\Http\Controllers\Api\Student\DashboardController as StudentDashboardController;
+use App\Http\Controllers\Api\Student\EnquiryController as StudentEnquiryController;
+use App\Http\Controllers\Api\Student\StudentAuthController;
 use App\Http\Controllers\Api\TestimonialController;
 use Illuminate\Support\Facades\Route;
 
@@ -33,6 +38,40 @@ Route::prefix('v1')->group(function () {
     Route::get('testimonials', [TestimonialController::class, 'publicIndex']);
     Route::get('gallery', [GalleryController::class, 'publicIndex']);
     Route::get('site-content', [SiteSettingController::class, 'publicContent']);
+
+    /*
+    |----------------------------------------------------------------------
+    | Student authentication + self-service
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('student')->group(function () {
+        Route::middleware('throttle:student-register')->post('auth/register', [StudentAuthController::class, 'register']);
+        Route::middleware('throttle:student-login')->post('auth/login', [StudentAuthController::class, 'login']);
+        Route::middleware('throttle:forgot-password')->post('auth/forgot-password', [StudentAuthController::class, 'forgotPassword']);
+        Route::post('auth/reset-password', [StudentAuthController::class, 'resetPassword']);
+
+        Route::middleware(['auth:sanctum', 'student.active'])->group(function () {
+            Route::get('auth/me', [StudentAuthController::class, 'me']);
+            Route::post('auth/logout', [StudentAuthController::class, 'logout']);
+            Route::patch('auth/profile', [StudentAuthController::class, 'updateProfile']);
+            Route::patch('auth/password', [StudentAuthController::class, 'updatePassword']);
+
+            Route::get('dashboard', [StudentDashboardController::class, 'index']);
+
+            Route::prefix('applications')->group(function () {
+                Route::get('/', [StudentApplicationController::class, 'index']);
+                Route::post('/', [StudentApplicationController::class, 'store']);
+                Route::get('{application}', [StudentApplicationController::class, 'show'])->whereNumber('application');
+                Route::patch('{application}/withdraw', [StudentApplicationController::class, 'withdraw'])->whereNumber('application');
+            });
+
+            Route::prefix('enquiries')->group(function () {
+                Route::get('/', [StudentEnquiryController::class, 'index']);
+                Route::post('/', [StudentEnquiryController::class, 'store']);
+                Route::get('{enquiry}', [StudentEnquiryController::class, 'show'])->whereNumber('enquiry');
+            });
+        });
+    });
 
     /*
     |----------------------------------------------------------------------
@@ -142,6 +181,19 @@ Route::prefix('v1')->group(function () {
                 Route::patch('{gallery}/deactivate', [GalleryController::class, 'deactivate']);
                 Route::post('{id}/restore', [GalleryController::class, 'restore'])->whereNumber('id');
                 Route::middleware('can:records.forceDelete')->delete('{id}/force', [GalleryController::class, 'forceDelete'])->whereNumber('id');
+            });
+
+            /*
+            |------------------------------------------------------------
+            | Students
+            |------------------------------------------------------------
+            */
+            Route::middleware('can:students.manage')->prefix('students')->group(function () {
+                Route::get('/', [AdminStudentController::class, 'index']);
+                Route::get('{student}', [AdminStudentController::class, 'show'])->whereNumber('student');
+                Route::patch('{student}', [AdminStudentController::class, 'update'])->whereNumber('student');
+                Route::patch('{student}/activate', [AdminStudentController::class, 'activate'])->whereNumber('student');
+                Route::patch('{student}/deactivate', [AdminStudentController::class, 'deactivate'])->whereNumber('student');
             });
 
             /*

@@ -12,7 +12,7 @@ class Enquiry extends Model
     public const STATUSES = ['new', 'in_progress', 'contacted', 'closed', 'spam'];
 
     protected $fillable = [
-        'name', 'email', 'phone', 'subject', 'message', 'source',
+        'user_id', 'name', 'email', 'phone', 'subject', 'message', 'source',
         'status', 'assigned_to', 'admin_notes', 'ip_hash', 'user_agent', 'contacted_at',
     ];
 
@@ -24,5 +24,10 @@ class Enquiry extends Model
     public function assignedTo()
     {
         return $this->belongsTo(User::class, 'assigned_to');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

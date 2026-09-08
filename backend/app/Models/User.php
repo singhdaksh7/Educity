@@ -13,14 +13,16 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
 
-    public const ROLES = ['super_admin', 'admin', 'content_manager', 'enquiry_manager'];
+    public const ROLES = ['super_admin', 'admin', 'content_manager', 'enquiry_manager', 'student'];
 
     protected $fillable = [
         'name',
         'email',
+        'phone',
         'password',
         'role',
         'is_active',
+        'last_login_at',
     ];
 
     protected $hidden = [
@@ -32,6 +34,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'last_login_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
         ];
@@ -50,5 +53,15 @@ class User extends Authenticatable
     public function reviewedApplications()
     {
         return $this->hasMany(AdmissionApplication::class, 'reviewed_by');
+    }
+
+    public function applications()
+    {
+        return $this->hasMany(AdmissionApplication::class);
+    }
+
+    public function enquiries()
+    {
+        return $this->hasMany(Enquiry::class);
     }
 }

@@ -23,7 +23,10 @@ return Application::configure(basePath: dirname(__DIR__))
         __DIR__.'/../app/Console/Commands',
     ])
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->alias(['admin.active' => \App\Http\Middleware\EnsureActiveAdmin::class]);
+        $middleware->alias([
+            'admin.active' => \App\Http\Middleware\EnsureActiveAdmin::class,
+            'student.active' => \App\Http\Middleware\EnsureActiveStudent::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Every exception below is only rendered as JSON for API requests,

@@ -25,6 +25,7 @@ class AppServiceProvider extends ServiceProvider
             'gallery.manage',
             'settings.manage',
             'records.restore',
+            'students.manage',
         ],
         'content_manager' => [
             'programs.manage',
@@ -67,6 +68,14 @@ class AppServiceProvider extends ServiceProvider
 
         RateLimiter::for('admin-login', function (Request $request) {
             return Limit::perMinute(5)->by($request->ip().'|'.strtolower((string) $request->input('email')));
+        });
+
+        RateLimiter::for('student-login', function (Request $request) {
+            return Limit::perMinute(5)->by($request->ip().'|'.strtolower((string) $request->input('email')));
+        });
+
+        RateLimiter::for('student-register', function (Request $request) {
+            return Limit::perMinute(5)->by($request->ip());
         });
 
         RateLimiter::for('forgot-password', function (Request $request) {

@@ -64,7 +64,7 @@ class EnquiryController extends Controller
 
     public function show(Enquiry $enquiry): JsonResponse
     {
-        return response()->json(['success' => true, 'message' => 'Enquiry retrieved.', 'data' => $enquiry->load('assignedTo:id,name,email')]);
+        return response()->json(['success' => true, 'message' => 'Enquiry retrieved.', 'data' => $enquiry->load('assignedTo:id,name,email', 'user:id,name,email')]);
     }
 
     public function update(UpdateEnquiryRequest $request, Enquiry $enquiry): JsonResponse
@@ -131,7 +131,7 @@ class EnquiryController extends Controller
     private function filtered(Request $request)
     {
         $query = $request->boolean('trashed') ? Enquiry::onlyTrashed() : Enquiry::query();
-        $query->with('assignedTo:id,name');
+        $query->with(['assignedTo:id,name', 'user:id,name,email']);
 
         if ($search = trim((string) $request->get('search', ''))) {
             $query->where(function ($q) use ($search) {
@@ -147,6 +147,10 @@ class EnquiryController extends Controller
 
         if ($request->filled('assigned_to')) {
             $query->where('assigned_to', $request->get('assigned_to'));
+        }
+
+        if ($request->filled('student_id')) {
+            $query->where('user_id', $request->get('student_id'));
         }
 
         if ($request->filled('from')) {

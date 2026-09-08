@@ -91,7 +91,7 @@ class AdmissionApplicationController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Application retrieved.',
-            'data' => $admissionApplication->load('program:id,title', 'reviewer:id,name'),
+            'data' => $admissionApplication->load('program:id,title', 'reviewer:id,name', 'user:id,name,email'),
         ]);
     }
 
@@ -160,7 +160,7 @@ class AdmissionApplicationController extends Controller
     private function filtered(Request $request)
     {
         $query = $request->boolean('trashed') ? AdmissionApplication::onlyTrashed() : AdmissionApplication::query();
-        $query->with('program:id,title');
+        $query->with(['program:id,title', 'user:id,name,email']);
 
         if ($search = trim((string) $request->get('search', ''))) {
             $query->where(function ($q) use ($search) {
@@ -176,6 +176,10 @@ class AdmissionApplicationController extends Controller
 
         if ($request->filled('program_id')) {
             $query->where('program_id', $request->get('program_id'));
+        }
+
+        if ($request->filled('student_id')) {
+            $query->where('user_id', $request->get('student_id'));
         }
 
         if ($request->filled('from')) {

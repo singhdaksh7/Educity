@@ -12,7 +12,7 @@ class AdmissionApplication extends Model
     public const STATUSES = ['submitted', 'under_review', 'contacted', 'accepted', 'rejected', 'withdrawn'];
 
     protected $fillable = [
-        'application_number', 'full_name', 'email', 'phone', 'date_of_birth',
+        'user_id', 'application_number', 'full_name', 'email', 'phone', 'date_of_birth',
         'program_id', 'previous_qualification', 'message', 'status',
         'reviewed_by', 'reviewed_at', 'admin_notes',
     ];
@@ -30,5 +30,10 @@ class AdmissionApplication extends Model
     public function reviewer()
     {
         return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

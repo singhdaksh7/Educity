@@ -1,6 +1,8 @@
 import React from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import Admin from './Admin'
+import Student from './Student'
+import ApplyForm from './components/ApplyForm'
 import NavBar from './components/NavBar'
 import Hero from './components/Hero'
 import Program from './components/Program'
@@ -26,6 +28,19 @@ function PublicApp() {
   )
 }
 
-function App() { return <Routes><Route path="/admin/*" element={<Admin/>}/><Route path="*" element={<PublicApp/>}/></Routes> }
+function App() {
+  return (
+    <Routes>
+      <Route path="/admin/*" element={<Admin/>}/>
+      <Route path="/student/*" element={<Student/>}/>
+      <Route path="/apply" element={<ApplyForm/>}/>
+      {/* User-friendly aliases, kept distinct from /admin/login. */}
+      <Route path="/login" element={<Navigate to="/student/login" replace/>}/>
+      <Route path="/register" element={<Navigate to="/student/register" replace/>}/>
+      <Route path="/dashboard" element={<Navigate to="/student" replace/>}/>
+      <Route path="*" element={<PublicApp/>}/>
+    </Routes>
+  )
+}
 
 export default App
