@@ -11,8 +11,9 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=vendor /app/vendor ./vendor
 COPY . .
+RUN chmod 755 docker-entrypoint.sh
 RUN php artisan package:discover --ansi \
     && mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache
 EXPOSE 10000
-CMD ["sh", "-c", "php artisan serve --host=0.0.0.0 --port=${PORT:-10000}"]
+ENTRYPOINT ["./docker-entrypoint.sh"]

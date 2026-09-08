@@ -23,9 +23,9 @@ class EducitySeeder extends Seeder
 
     private function seedAdministrator(): void
     {
-        $email = env('ADMIN_EMAIL');
-        $password = env('ADMIN_PASSWORD');
-        $name = env('ADMIN_NAME', 'Administrator');
+        $email = config('educity.admin.email');
+        $password = config('educity.admin.password');
+        $name = config('educity.admin.name');
 
         if (! $email || ! $password) {
             $this->command?->warn('Administrator seed skipped: set ADMIN_NAME, ADMIN_EMAIL and ADMIN_PASSWORD in .env.');
@@ -33,7 +33,7 @@ class EducitySeeder extends Seeder
             return;
         }
 
-        User::updateOrCreate(
+        User::firstOrCreate(
             ['email' => $email],
             ['name' => $name, 'password' => Hash::make($password), 'role' => 'super_admin', 'is_active' => true]
         );
@@ -48,7 +48,7 @@ class EducitySeeder extends Seeder
         ];
 
         foreach ($programs as $index => $program) {
-            Program::updateOrCreate(
+            Program::withTrashed()->firstOrCreate(
                 ['slug' => $program['slug']],
                 $program + ['display_order' => $index + 1, 'is_active' => true]
             );
@@ -60,7 +60,7 @@ class EducitySeeder extends Seeder
         $names = ['William Jackson', 'Sarika Panwar', 'Vanshika Goyal', 'Shruti Sharma'];
 
         foreach ($names as $index => $name) {
-            Testimonial::updateOrCreate(
+            Testimonial::withTrashed()->firstOrCreate(
                 ['student_name' => $name],
                 [
                     'quote' => 'A supportive and inspiring learning environment with meaningful opportunities for growth.',
@@ -81,7 +81,7 @@ class EducitySeeder extends Seeder
         ];
 
         foreach ($items as $index => $item) {
-            Gallery::updateOrCreate(
+            Gallery::withTrashed()->firstOrCreate(
                 ['title' => $item['title']],
                 $item + ['image_path' => null, 'display_order' => $index + 1, 'is_active' => true]
             );
@@ -105,7 +105,7 @@ class EducitySeeder extends Seeder
         ];
 
         foreach ($settings as $key => $value) {
-            SiteSetting::updateOrCreate(
+            SiteSetting::firstOrCreate(
                 ['key' => $key],
                 ['value' => $value, 'type' => 'text', 'is_public' => true]
             );
