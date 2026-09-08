@@ -8,25 +8,27 @@ import arrow from "../assets/white-arrow.png"
 import { useState } from 'react'
 function Contacts() {
      const [result, setResult] = useState("");
+     const [sending, setSending] = useState(false);
 
   const onSubmit = async (event) => {
     event.preventDefault();
-    setResult("Sending....");
+    setResult(""); setSending(true);
     const formData = new FormData(event.target);
-    formData.append("access_key", "c0d543a7-af1b-4e2a-9303-2f9f96c0a496");
-
-    const response = await fetch("https://api.web3forms.com/submit", {
+    try {
+    const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api/v1'}/enquiries`, {
       method: "POST",
-      body: formData
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(Object.fromEntries(formData))
     });
-
     const data = await response.json();
     if (data.success) {
-      setResult("Form Submitted Successfully");
+      setResult("Form submitted successfully.");
       event.target.reset();
     } else {
-      setResult("Error");
+      setResult(data.message || "Unable to submit your message.");
     }
+    } catch { setResult('Unable to reach the server. Please try again later.'); }
+    finally { setSending(false); }
   }
   return (
     <div id='contact'>
@@ -59,11 +61,12 @@ function Contacts() {
             </li>
           </ul>
         </div>
-        <form action="" onSubmit={onSubmit}>
+        <form onSubmit={onSubmit}>
           <div className="flex flex-col">
             <label htmlFor="">Your Name:</label>
             <input
               type="text"
+              name="name" required maxLength="120"
               placeholder="Enter Your Name "
               className="bg-blue-200 mt-2 mb-3 h-10 w-100 rounded placeholder:px-4"
             />
@@ -71,13 +74,19 @@ function Contacts() {
             <label htmlFor="">Your PhoneNo.</label>
             <input
               type="text"
+              name="phone" required maxLength="30"
               placeholder="Enter Your Phone-Number"
               className="bg-blue-200 mt-2 mb-3 h-10 w-100 rounded placeholder:px-4"
             />
 
+            <label htmlFor="">Your Email:</label>
+            <input type="email" name="email" placeholder="Enter Your Email" className="bg-blue-200 mt-2 mb-3 h-10 w-100 rounded placeholder:px-4" />
+            <label htmlFor="">Subject:</label>
+            <input type="text" name="subject" maxLength="160" placeholder="Enter Subject" className="bg-blue-200 mt-2 mb-3 h-10 w-100 rounded placeholder:px-4" />
+            <input type="text" name="website" tabIndex="-1" autoComplete="off" className="hidden" aria-hidden="true" />
             <label htmlFor="">Your Message:</label>
             <textarea
-              name=""
+              name="message" required maxLength="4000"
               id=""
               placeholder="Enter Your Message"
               rows={6}
@@ -87,9 +96,9 @@ function Contacts() {
             <div className="flex justify-center items-center">
               <button
                 className="bg-blue-950 text-white flex  rounded-full py-2 px-3 w-25 text-center  gap-2"
-                type="submit"
+                type="submit" disabled={sending}
               >
-                Submit <img className="w-5 h-5" src={arrow} alt="" />
+                {sending ? 'Sending...' : 'Submit'} <img className="w-5 h-5" src={arrow} alt="" />
               </button>
             </div>
           </div>

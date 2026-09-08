@@ -1,4 +1,6 @@
 import React from 'react'
+import { Route, Routes } from 'react-router-dom'
+import Admin from './Admin'
 import NavBar from './components/NavBar'
 import Hero from './components/Hero'
 import Program from './components/Program'
@@ -9,7 +11,7 @@ import Contacts from './components/Contacts'
 import Footer from './components/Footer'
 
 
-function App() {
+function PublicApp() {
   return (
     <div>
       <NavBar/>
@@ -23,5 +25,7 @@ function App() {
     </div>
   )
 }
+
+function App() { return <Routes><Route path="/admin/*" element={<Admin/>}/><Route path="*" element={<PublicApp/>}/></Routes> }
 
 export default App

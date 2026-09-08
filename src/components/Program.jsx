@@ -1,52 +1,15 @@
-import React from 'react'
-import program1 from "../assets/program-1.png"
-import program2 from "../assets/program-2.png"
-import program3 from "../assets/program-3.png"
-import programIcon1 from "../assets/program-icon-1.png"
-import programIcon2 from "../assets/program-icon-2.png"
-import programIcon3 from "../assets/program-icon-3.png"
-import Title from './Title'
+import React, { useEffect, useState } from 'react';
+import program1 from '../assets/program-1.png';
+import program2 from '../assets/program-2.png';
+import program3 from '../assets/program-3.png';
+import Title from './Title';
+import { api, mediaUrl } from '../api';
 function Program() {
-  return (
-    <div  id='program'>
-      <Title heading='Our Program' sub='What We Offer'/>
-      <div className="flex gap-10 ml-30 mr-30 mt-20 mb-20 h-79 ">
-        <div className="relative ">
-          <img className="rounded" src={program1} alt="" />
-          <div className="absolute top-0 right-0 bottom-0 left-0 bg-[linear-gradient(rgba(0,15,153,0.3))] h-full flex justify-center items-center flex-col text-white opacity-0 hover:opacity-100  ">
-            <img
-              className="w-20 h-20 ml-2 mt-1 p-[60%]  duration-100 hover:p-0"
-              src={programIcon1}
-              alt=""
-            />
-            <p>Graduation Degree</p>
-          </div>
-        </div>
-        <div className="relative">
-          <img className="rounded" src={program2} alt="" />
-          <div className="absolute top-0 right-0 bottom-0 left-0 bg-[linear-gradient(rgba(0,15,153,0.2))] h-full flex justify-center items-center flex-col text-white opacity-0 hover:opacity-100  ">
-            <img
-              className="w-20 h-20 ml-2 mt-1 p-[60%] duration-100 hover:p-0"
-              src={programIcon2}
-              alt=""
-            />
-            <p> Post Graduation </p>
-          </div>
-        </div>
-        <div className="relative">
-          <img className="rounded" src={program3} alt="" />
-          <div className="absolute top-0 right-0 bottom-0 left-0 bg-[linear-gradient(rgba(0,15,153,0.3))] h-full flex justify-center items-center flex-col text-white opacity-0 hover:opacity-100 ">
-            <img
-              className="w-20 h-20 ml-2 mt-1 p-[60%]  duration-100 hover:p-0"
-              src={programIcon3}
-              alt=""
-            />
-            <p>Graduation Degree</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  const [programs, setPrograms] = useState([]); const [selected, setSelected] = useState(null); const [form, setForm] = useState({ full_name: '', email: '', phone: '', date_of_birth: '', previous_qualification: '', message: '', website: '' }); const [notice, setNotice] = useState(''); const [sending, setSending] = useState(false);
+  useEffect(() => { api('/programs').then(r => setPrograms(r.data || [])).catch(() => setPrograms([])); }, []);
+  const fallback = [{ title: 'Graduation Degree', image_path: program1 }, { title: 'Post Graduation', image_path: program2 }, { title: 'Professional Certificate', image_path: program3 }];
+  const apply = async e => { e.preventDefault(); setSending(true); setNotice(''); try { const r = await api('/admission-applications', { method: 'POST', body: JSON.stringify({ ...form, program_id: selected.id }) }); setNotice(`Application received. Reference: ${r.data.application_number}`); setForm({ full_name: '', email: '', phone: '', date_of_birth: '', previous_qualification: '', message: '', website: '' }); } catch (x) { setNotice(Object.values(x.errors || {}).flat().join(' ') || x.message); } finally { setSending(false); } };
+  const list = programs.length ? programs : fallback;
+  return <div id="program"><Title heading="Our Program" sub="What We Offer" /><div className="mx-auto my-12 grid max-w-6xl gap-8 px-4 md:grid-cols-3">{list.map(program => <article key={program.id || program.title} className="overflow-hidden rounded shadow"><img className="h-56 w-full object-cover" src={mediaUrl(program.image_path)} alt={program.title} /><div className="p-4"><h3 className="font-bold text-blue-950">{program.title}</h3><p className="my-2 text-sm">{program.short_description}</p>{program.id && <button className="rounded bg-blue-950 px-3 py-2 text-white" onClick={() => { setSelected(program); setNotice(''); }}>Apply now</button>}</div></article>)}</div>{selected && <div role="dialog" aria-modal="true" aria-label="Admission application" className="fixed inset-0 z-20 overflow-auto bg-black/50 p-4"><form onSubmit={apply} className="mx-auto my-8 max-w-lg rounded bg-white p-6"><div className="flex justify-between"><h2 className="text-xl font-bold">Apply: {selected.title}</h2><button type="button" aria-label="Close application form" onClick={() => setSelected(null)}>×</button></div>{['full_name','email','phone','date_of_birth','previous_qualification'].map(k => <label className="my-2 block capitalize" key={k}>{k.replaceAll('_',' ')}<input required={['full_name','email','phone'].includes(k)} type={k === 'email' ? 'email' : k === 'date_of_birth' ? 'date' : 'text'} value={form[k]} onChange={e => setForm({ ...form, [k]: e.target.value })} className="mt-1 block w-full border p-2" /></label>)}<label className="my-2 block">Message<textarea className="mt-1 block w-full border p-2" value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} /></label><input name="website" value={form.website} onChange={e => setForm({ ...form, website: e.target.value })} className="hidden" tabIndex="-1" autoComplete="off" /><button disabled={sending} className="rounded bg-blue-950 px-3 py-2 text-white">{sending ? 'Submitting…' : 'Submit application'}</button><p role="status">{notice}</p></form></div>}</div>;
 }
-
-export default Program
+export default Program;

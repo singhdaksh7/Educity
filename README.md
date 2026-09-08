@@ -1,16 +1,33 @@
-# React + Vite
+# Educity
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Educity's public website (React + Vite) with a Laravel 12 API backend.
 
-Currently, two official plugins are available:
+- `backend/` — Laravel 12 API (`/api/v1`), Sanctum auth, MySQL/MariaDB. See [`BACKEND_PLAN.md`](BACKEND_PLAN.md), [`API_DOCUMENTATION.md`](API_DOCUMENTATION.md) and [`DEPLOYMENT.md`](DEPLOYMENT.md).
+- `src/` — React/Vite frontend (public site + admin foundation).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Quick start
 
-## React Compiler
+```bash
+# Backend
+cd backend
+cp .env.example .env
+composer install
+php artisan key:generate
+php artisan migrate
+php artisan db:seed   # set ADMIN_NAME/ADMIN_EMAIL/ADMIN_PASSWORD in .env first
+php artisan storage:link
+php artisan serve
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+# Frontend (in a separate terminal, repo root)
+npm install
+npm run dev
+```
 
-## Expanding the ESLint configuration
+See [`DEPLOYMENT.md`](DEPLOYMENT.md) for full environment configuration and Hostinger deployment steps.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Frontend tooling
+
+Built with Vite + React. Notable plugins:
+
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) — Babel-based Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) — SWC-based Fast Refresh
