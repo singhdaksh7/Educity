@@ -6,6 +6,7 @@ import phone from "../assets/phone-icon.png"
 import location from "../assets/location-icon.png"
 import arrow from "../assets/white-arrow.png"
 import { useState } from 'react'
+import { api } from '../api'
 function Contacts() {
      const [result, setResult] = useState("");
      const [sending, setSending] = useState(false);
@@ -15,19 +16,14 @@ function Contacts() {
     setResult(""); setSending(true);
     const formData = new FormData(event.target);
     try {
-    const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api/v1'}/enquiries`, {
-      method: "POST",
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify(Object.fromEntries(formData))
-    });
-    const data = await response.json();
-    if (data.success) {
-      setResult("Form submitted successfully.");
-      event.target.reset();
-    } else {
-      setResult(data.message || "Unable to submit your message.");
-    }
-    } catch { setResult('Unable to reach the server. Please try again later.'); }
+      const data = await api('/enquiries', { method: 'POST', body: JSON.stringify(Object.fromEntries(formData)) });
+      if (data.success) {
+        setResult("Form submitted successfully.");
+        event.target.reset();
+      } else {
+        setResult(data.message || "Unable to submit your message.");
+      }
+    } catch (x) { setResult(x.message || 'Unable to reach the server. Please try again later.'); }
     finally { setSending(false); }
   }
   return (
