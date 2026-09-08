@@ -99,7 +99,11 @@ return [
 
     'cipher' => 'AES-256-CBC',
 
-    'key' => env('APP_KEY'),
+    // Render's generated values are base64-encoded 256-bit keys without
+    // Laravel's prefix. Keep conventional local APP_KEY values unchanged.
+    'key' => str_starts_with((string) env('APP_KEY'), 'base64:')
+        ? env('APP_KEY')
+        : 'base64:'.env('APP_KEY'),
 
     'previous_keys' => [
         ...array_filter(

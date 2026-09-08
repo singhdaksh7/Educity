@@ -24,15 +24,8 @@ class DashboardController extends Controller
         $applicationsByStatus = AdmissionApplication::select('status', DB::raw('count(*) as count'))
             ->groupBy('status')->pluck('count', 'status');
 
-        $monthExpression = $this->monthGroupExpression();
-
-        $monthlyEnquiries = Enquiry::selectRaw("{$monthExpression} as month, count(*) as count")
-            ->where('created_at', '>=', $rangeStart)
-            ->groupBy('month')->orderBy('month')->get();
-
-        $monthlyApplications = AdmissionApplication::selectRaw("{$monthExpression} as month, count(*) as count")
-            ->where('created_at', '>=', $rangeStart)
-            ->groupBy('month')->orderBy('month')->get();
+        $monthlyEnquiries = $this->monthlyCounts(Enquiry::class, $rangeStart);
+        $monthlyApplications = $this->monthlyCounts(AdmissionApplication::class, $rangeStart);
 
         return response()->json([
             'success' => true,
@@ -57,13 +50,20 @@ class DashboardController extends Controller
     }
 
     /**
-     * MySQL/MariaDB (production) and SQLite (local dev) group month strings
-     * differently; pick the right expression for the active connection.
+     * Build month buckets in PHP so this works unchanged with PostgreSQL,
+     * MySQL/MariaDB, and SQLite. The demo dataset is small, and the range is
+     * bounded to the last twelve months.
+     *
+     * @param class-string<\Illuminate\Database\Eloquent\Model> $model
      */
-    private function monthGroupExpression(): string
+    private function monthlyCounts(string $model, \Carbon\CarbonInterface $rangeStart): \Illuminate\Support\Collection
     {
-        return DB::connection()->getDriverName() === 'sqlite'
-            ? "strftime('%Y-%m', created_at)"
-            : "DATE_FORMAT(created_at, '%Y-%m')";
+        return $model::query()
+            ->where('created_at', '>=', $rangeStart)
+            ->orderBy('created_at')
+            ->get(['created_at'])
+            ->groupBy(fn ($record) => $record->created_at->format('Y-m'))
+            ->map(fn ($records, $month) => ['month' => $month, 'count' => $records->count()])
+            ->values();
     }
 }

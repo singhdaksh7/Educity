@@ -1,3 +1,25 @@
 <?php
-namespace App\Http\Controllers\Api; use App\Http\Controllers\Controller; use App\Models\{Enquiry,AdmissionApplication,Program,Testimonial,Gallery,ActivityLog}; use Illuminate\Http\Request; use Illuminate\Support\Facades\DB;
-class AdminController extends Controller { public function dashboard(){return response()->json(['success'=>true,'message'=>'Dashboard retrieved.','data'=>['total_enquiries'=>Enquiry::count(),'new_enquiries'=>Enquiry::where('status','new')->count(),'enquiries_this_month'=>Enquiry::whereMonth('created_at',now()->month)->whereYear('created_at',now()->year)->count(),'total_applications'=>AdmissionApplication::count(),'applications_by_status'=>AdmissionApplication::select('status',DB::raw('count(*) as count'))->groupBy('status')->pluck('count','status'),'active_programs'=>Program::where('is_active',true)->count(),'active_testimonials'=>Testimonial::where('is_active',true)->count(),'gallery_images'=>Gallery::where('is_active',true)->count(),'recent_enquiries'=>Enquiry::latest()->take(5)->get(),'recent_applications'=>AdmissionApplication::latest()->take(5)->get(),'monthly_enquiry_counts'=>Enquiry::selectRaw("DATE_FORMAT(created_at, '%Y-%m') month, count(*) count")->where('created_at','>=',now()->subMonths(11)->startOfMonth())->groupBy('month')->orderBy('month')->get(),'monthly_application_counts'=>AdmissionApplication::selectRaw("DATE_FORMAT(created_at, '%Y-%m') month, count(*) count")->where('created_at','>=',now()->subMonths(11)->startOfMonth())->groupBy('month')->orderBy('month')->get()]]); } public function logs(Request $r){return response()->json(['success'=>true,'message'=>'Activity logs retrieved.','data'=>ActivityLog::with('user:id,name,email')->latest()->paginate(min((int)$r->get('per_page',20),100))]);}}
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
+use Illuminate\Http\Request;
+
+class AdminController extends Controller
+{
+    public function dashboard()
+    {
+        return app(DashboardController::class)->index();
+    }
+
+    public function logs(Request $request)
+    {
+        return response()->json([
+            'success' => true,
+            'message' => 'Activity logs retrieved.',
+            'data' => ActivityLog::with('user:id,name,email')->latest()
+                ->paginate(min((int) $request->get('per_page', 20), 100)),
+        ]);
+    }
+}
