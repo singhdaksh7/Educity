@@ -27,13 +27,22 @@ class EducitySeeder extends Seeder
         $password = config('educity.admin.password');
         $name = config('educity.admin.name');
 
-        if (! $email || ! $password) {
-            $this->command?->warn('Administrator seed skipped: set ADMIN_NAME, ADMIN_EMAIL and ADMIN_PASSWORD in .env.');
+        // Diagnostic-only: reports which named variable resolved empty, never its value.
+        $missing = collect(['ADMIN_NAME' => $name, 'ADMIN_EMAIL' => $email, 'ADMIN_PASSWORD' => $password])
+            ->filter(fn ($value) => blank($value))
+            ->keys();
+
+        if ($missing->isNotEmpty()) {
+            $this->command?->warn('Administrator seed skipped: missing environment variable(s): '.$missing->implode(', ').'.');
 
             return;
         }
 
-        User::firstOrCreate(
+        // updateOrCreate (not firstOrCreate): the task brief explicitly requires that
+        // repeated deployment updates the seeded administrator's password from the
+        // current env var, keeps it active, and assigns super_admin. This only ever
+        // touches the single row matched by ADMIN_EMAIL — no other user is affected.
+        User::updateOrCreate(
             ['email' => $email],
             ['name' => $name, 'password' => Hash::make($password), 'role' => 'super_admin', 'is_active' => true]
         );

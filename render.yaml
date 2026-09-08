@@ -10,7 +10,7 @@ services:
     dockerContext: .
     healthCheckPath: /api/health
     preDeployCommand: >-
-      php artisan migrate --force && php artisan db:seed --class=EducitySeeder --force &&
+      php artisan config:clear && php artisan migrate --force && php artisan db:seed --class=EducitySeeder --force &&
       php artisan config:cache && php artisan route:cache && php artisan view:cache
     envVars:
       - key: APP_NAME
